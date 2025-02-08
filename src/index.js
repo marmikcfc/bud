@@ -1,6 +1,8 @@
 const { app, BrowserWindow, Tray, Menu, globalShortcut, screen, nativeImage } = require('electron');
 const path = require('path');
 const started = require('electron-squirrel-startup');
+const { spawn } = require('child_process');
+const audioSender = require('./audioSender');
 
 // Set app name globally
 app.name = 'Bud';
@@ -95,6 +97,20 @@ function createTray() {
   });
 }
 
+function spawnPythonBackend() {
+  const backendPath = require('path').join(__dirname, '../../', 'bud-backend', 'main.py');
+  // Adjust 'python' to 'python3' if necessary
+  const backendProcess = spawn('python', [backendPath]);
+
+  backendProcess.stdout.on('data', (data) => {
+    console.log(`Python: ${data}`);
+  });
+
+  backendProcess.stderr.on('data', (data) => {
+    console.error(`Python ERR: ${data}`);
+  });
+}
+
 // Wait for app to be ready
 app.whenReady().then(() => {
   // Only hide dock when no windows are open
@@ -108,8 +124,12 @@ app.whenReady().then(() => {
   // Create tray
   createTray();
 
+  // Spawn the Python backend and start audio recording
+  spawnPythonBackend();
+  audioSender.startAudioStream();
+
   // Register global shortcut
-  globalShortcut.register('CommandOrControl+B', () => {
+  globalShortcut.register('CommandOrControl+Shift+B', () => {
     if (chatWindow) {
       chatWindow.show();
     } else {
@@ -150,6 +170,9 @@ const createSettingsWindow = () => {
 };
 
 const createChatWindow = () => {
+  // Pause wake word detection via audio sender
+  audioSender.stopAudioStream();
+
   // Show dock when opening a window
   if (process.platform === 'darwin') {
     app.dock.show();
@@ -173,7 +196,6 @@ const createChatWindow = () => {
     title: 'Bud'  // Set window title
   });
 
-  // Set the application name for this window
   chatWindow.setTitle('Bud');
   if (process.platform === 'darwin') {
     app.name = 'Bud';
@@ -183,6 +205,8 @@ const createChatWindow = () => {
 
   chatWindow.on('closed', () => {
     chatWindow = null;
+    // Resume wake word detection when chat window is closed
+    audioSender.startAudioStream();
     // Hide dock if no windows are open
     if (process.platform === 'darwin' && !settingsWindow && !chatWindow) {
       app.dock.hide();

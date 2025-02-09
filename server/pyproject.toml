@@ -1,0 +1,10 @@
+[project]
+name = "bud-server"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.9,<3.12"
+dependencies = [
+    "heybuddy>=0.1.0",
+    "websockets>=14.2",
+]

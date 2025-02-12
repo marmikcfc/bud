@@ -30,14 +30,14 @@ pip install -r server/requirements.txt
 
 3. Install Node.js dependencies:
 ```bash
-npm install
+pnpm install
 ```
 
 ### Running the Application
 
 1. Start the application (this will start both the backend server and Electron app):
 ```bash
-npm start
+pnpm start
 ```
 
 The application will start in the system tray. You can:

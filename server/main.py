@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 import queue
-from heybuddy import WakeWordModelThread
+from heybuddy.util import WakeWordModelThread
 import traceback
 
 # Set up logging
